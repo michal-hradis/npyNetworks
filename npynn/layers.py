@@ -3,9 +3,9 @@ from collections import OrderedDict
 import numpy as np
 
 
-dataType = np.float32
+dataType = np.float64
 
-   
+
 class Prod(object):
     counter = 0
 
@@ -67,17 +67,17 @@ class Sigmoid(object):
 
     def getParams(self):
         return {}
-    
+
 
 class L2Loss(object):
 
     def forward(self, bottom, labels):
         self.labels = labels
         self.bottom = bottom
-        return 0.5 * np.sum((bottom - labels)**2)
+        return 0.5 * np.sum((bottom - labels)**2) / self.bottom.size
 
     def backward(self, grad):
-        return grad * (self.bottom - self.labels)
+        return grad * (self.bottom - self.labels) / self.bottom.size
 
     def getParams(self):
         return {}

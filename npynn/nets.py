@@ -12,13 +12,13 @@ class SGD(object):
         netParams = self.net.getParams()
         for name, param in netParams.items():
             param[1][...] = 0
-            
+
         losses = self.net.forward(data, labels)
         self.net.backward(1.0 / data.shape[0])
 
         for name, param in netParams.items():
             param[0][...] = param[0] - self.lr * param[1]
-        
+
         return losses
 
 
@@ -59,3 +59,35 @@ class LinearNet(object):
             for paramName in layerParams:
                 netParams[paramName] = layerParams[paramName]
         return netParams
+
+
+def testNet(net, data, labels):
+    loss = net.forward(data, labels)
+    net.backward(1)
+    params = net.getParams()
+    epsilon = 1e-5
+    paramsToTest = 100
+    for name, param in params.items():
+        flatParam = param[0].reshape(-1)
+        flatGrad = param[1].reshape(-1)
+        gradients = []
+        gradDiffs = []
+        for index in np.random.choice(flatParam.size, paramsToTest):
+            tmp = flatParam[index]
+            flatParam[index] += epsilon
+            newLoss = net.forward(data, labels)
+            numericalGradient = (newLoss - loss) / epsilon
+            flatParam[index] = tmp
+            gradients.append(flatGrad[index])
+            gradDiffs.append(
+                numericalGradient - flatGrad[index])
+
+        print(
+            name,
+            np.average(np.absolute(gradDiffs)) / np.average(np.absolute(gradients)),
+            np.absolute(gradDiffs).max() / np.absolute(gradients).mean())
+
+
+
+
+
